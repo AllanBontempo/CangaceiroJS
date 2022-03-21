@@ -9,7 +9,6 @@ class Negociacao {
                 _valor
             }
         );
-
         Object.freeze(this);
     }
 
