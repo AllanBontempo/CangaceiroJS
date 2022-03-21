@@ -10,9 +10,11 @@ class NegociacaoController {
 
     adiciona(event) {
         event.preventDefault();
+        let data = DateConverter.paraData(this._data.value);
 
-        const negociacao = new Negociacao(this._data.value,
-            parseInt(this._quantidade.value), parseFloat(this._valor.value));
+        const negociacao = new Negociacao(
+            data, parseInt(this._quantidade.value), parseFloat(this._valor.value)
+        );
     }
 
 }

@@ -4,7 +4,7 @@ class Negociacao {
         Object.assign(
             this,
             {
-                _data: new Date(_data.getTime()),
+                _data: new Date(_data),
                 _quantidade,
                 _valor
             }
@@ -18,7 +18,7 @@ class Negociacao {
     }
 
     get data() {
-        return this._data.getTime();
+        return this._data;
     }
 
     get valor() {
