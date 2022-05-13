@@ -5,7 +5,7 @@ class NegociacaoController {
         this._data = $('#data');
         this._valor = $('#valor');
         this._quantidade = $('#quantidade');
-
+        this._service = new NegociacaoService();
         this._negociacoes = new Bind(
             new Negociacoes(),
             new NegociacoesView('#negociacoes'),
@@ -35,6 +35,20 @@ class NegociacaoController {
             }
         }
 
+    }
+
+    importaNegociacoes() {
+        this._service.obterNegociacoesDaSemana((err, negociacoes) => {
+            if(err) {
+                this._mensagem.texto = 'Não foi possível obter as negociações da semana!'
+                return;
+            }
+
+            negociacoes.forEach(negociacao => {
+               this._negociacoes.adiciona(negociacao);
+            });
+            this._mensagem.texto = 'Negociações importadas com sucesso.'
+        });
     }
 
     _criaNegociacao() {
