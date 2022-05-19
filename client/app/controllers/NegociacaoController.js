@@ -6,21 +6,13 @@ class NegociacaoController {
         this._valor = $('#valor');
         this._quantidade = $('#quantidade');
         this._service = new NegociacaoService();
-        this._negociacoes = new Bind(
-            new Negociacoes(),
-            new NegociacoesView('#negociacoes'),
-            'adiciona', 'esvazia'
-        );
+        this._negociacoes = new Bind(new Negociacoes(), new NegociacoesView('#negociacoes'), 'adiciona', 'esvazia');
 
-        this._mensagem = new Bind(
-            new Mensagem(),
-            new MensagemView('#mensagemView'),
-            'texto'
-        );
+        this._mensagem = new Bind(new Mensagem(), new MensagemView('#mensagemView'), 'texto');
     }
 
     adiciona(event) {
-        
+
         try {
             event.preventDefault();
             this._negociacoes.adiciona(this._criaNegociacao());
@@ -38,25 +30,27 @@ class NegociacaoController {
     }
 
     importaNegociacoes() {
-        this._service.obterNegociacoesDaSemana((err, negociacoes) => {
-            if(err) {
-                this._mensagem.texto = 'Não foi possível obter as negociações da semana!'
-                return;
-            }
+        const negociacoes = [];
 
-            negociacoes.forEach(negociacao => {
-               this._negociacoes.adiciona(negociacao);
-            });
-            this._mensagem.texto = 'Negociações importadas com sucesso.'
-        });
+        this._service.obterNegociacoesDaSemana()
+            .then(semana => {
+                negociacoes.push(...semana);
+                return this._service.obterNegociacoesDaSemanaAnterior();
+            })
+            .then(anterior => {
+                negociacoes.push(...anterior);
+                return this._service.obterNegociacoesDaSemanaRetrasada();
+            })
+            .then(retrasada => {
+                negociacoes.push(...retrasada);
+                negociacoes.forEach(negociacao => this._negociacoes.adiciona(negociacao));
+                this._mensagem.texto = 'Negociações importadas com sucesso!'
+            })
+            .catch(err => this._mensagem.texto = err);
     }
 
     _criaNegociacao() {
-        return new Negociacao(
-            DateConverter.paraData(this._data.value),
-            parseInt(this._quantidade.value),
-            parseFloat(this._valor.value)
-        );
+        return new Negociacao(DateConverter.paraData(this._data.value), parseInt(this._quantidade.value), parseFloat(this._valor.value));
     }
 
     _limpaForm() {
