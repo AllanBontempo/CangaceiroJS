@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprendendo IndexedDB</title>
+</head>
+<body>
+
+    <script>
+        let connections = null;
+        const openRequest = indexedDB.open('jscangaceiro', 1);
+
+        openRequest.onupgradeneeded = e => {
+            console.log('Cria ou altera um banco já existente.');
+            connections = e.target.result;
+
+            if (connections.objectStoreNames.contains('negociacoes')) {
+                connections.deleteObjectStore('negociacoes');
+            }
+
+            connections.createObjectStore('negociacoes', {autoIncrement: true});
+
+        };
+
+        openRequest.onsuccess = e => {
+            console.log('Conexão obtida com sucesso!');
+            connections = e.target.result;
+        };
+        openRequest.onerror = e => {
+            console.log(e.target.error);
+        };
+        
+        function adiciona() {
+            const negociacao = new Negociacao(new Date(), 200, 1);
+
+            const request = connections.transaction(['negociacoes'], 'readwrite')
+                .transaction.objectStore('negociacoes')
+                .add(negociacao);
+
+
+            openRequest.onsuccess = e => {
+                console.log('Negociação salva com sucesso!');
+            };
+
+            openRequest.onerror = e => {
+                console.log('Não foi possível salvar a negociação');
+            };
+        }
+
+        function listaTodos() {
+
+            const negociacoes = [];
+
+            const cursor = connections.transaction(['negociacoes'], 'readwrite')
+                .transaction.objectStore('negociacoes')
+                .openCursor();
+
+
+            openRequest.onsuccess = e => {
+                const atual = e.target.result;
+                if (atual) {
+                    const negociacao = new Negociacao(
+                      atual.value._data,
+                      atual.value.quantidade,
+                      atual.value.valor
+                    );
+                    negociacoes.push(negociacao);
+                    atual.continue();
+                }else {
+                    console.log(negociacoes)
+                }
+            };
+
+            openRequest.onerror = e => console.log('Error: ' + e.target.error.name);
+        }
+
+    </script>
+    <script src="../app/domain/negociacao/Negociacao.js"></script>
+
+</body>
+</html>
